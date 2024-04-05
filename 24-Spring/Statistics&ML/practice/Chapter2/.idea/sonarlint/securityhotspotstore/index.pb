@@ -1,0 +1,3 @@
+
+C
+vectorization.ipynb,3/c/3c34456111711027a18d51c40b971ef3fa208533
