@@ -78,6 +78,27 @@ class Paddle:
     def turn_left(self, event): self.x = -int(self.canvas_width * 0.003)
     def turn_right(self, event): self.x = int(self.canvas_width * 0.003)
 
+class TopPaddle:
+    def __init__(self, canvas, color):
+        self.canvas = canvas
+        self.id = canvas.create_rectangle(0, 0, 100, 20, fill=color)
+
+        initial_x = self.canvas.winfo_width() * 0.4
+        initial_y = self.canvas.winfo_height() * 0.1
+        self.canvas.move(self.id, initial_x, initial_y)
+
+        starts = [i for i in range(-3, 4) if i != 0]
+        random.shuffle(starts)
+        self.x = starts[random.randint(0, len(starts) - 1)]
+
+        self.canvas_width = self.canvas.winfo_width()
+
+    def draw(self):
+        self.canvas.move(self.id, self.x, 0)
+        pos = self.canvas.coords(self.id)
+        if pos[0] <= 0: self.x = 3
+        elif pos[2] >= self.canvas_width: self.x = -3
+
 def restart(event):
     global path
     global tk
@@ -91,6 +112,7 @@ def game_loop():
     if not ball.hit_bottom:
         ball.draw()
         paddle.draw()
+        top.draw()
     tk.after(10, game_loop) # 10ms = 초당 100번 함수 호출
 
 path = os.path.realpath(sys.argv[0])
@@ -111,7 +133,8 @@ btn.place(x=5, y=5, anchor="nw")
 # 버튼이 기본적으로 캔버스 내에서 자동적으로 정렬
 
 paddle = Paddle(canvas, 'blue')
-ball = Ball(canvas, paddle, 'red')
+top = TopPaddle(canvas, 'red')
+ball = Ball(canvas, paddle, 'green')
 
 tk.after(10, game_loop)
 tk.mainloop() # 이벤트 루프 시작
