@@ -122,15 +122,20 @@ tk = Tk() # Tk 객체: 버튼, 입력상자, 그림 그릴 수 있는 캔버스 
 tk.title("Bouncing Ball")
 tk.resizable(0, 0) # 고정된 프레임 크기, 사이즈 변경 불가
 tk.wm_attributes("-topmost", 1) # 다른 모든 창들 앞에 캔버스를 가진 창이 위치함
-canvas = Canvas(tk, width=800, height=500, bd=0, highlightthickness=0)
+
+canvas = Canvas(tk, width=800, height=500, bd=0, highlightthickness=0, bg="white")
 # bd=0, highlightthickness=0 => 캔버스 외곽에 둘러싼 외곽선(border)이 없도록
 canvas.pack() # 위 설정값대로 크기를 맞춤
 canvas.bind_all("<KeyPress-Return>", restart)
-tk.update() # Tkinter가 변경된 GUI 요소들을 즉시 처리하고 화면에 그 결과를 반영
+
 btn = Button(tk, text="Quit", command=tk.quit) # 'Quit' 버튼에 tk.quit 함수 연결
-btn.place(x=5, y=5, anchor="nw")
+btn.place(x=5, y=5)
 # btn.pack() # 화면에 표시하라는 지시 명령
 # 버튼이 기본적으로 캔버스 내에서 자동적으로 정렬
+
+score = 0
+score_view = canvas.create_text(700, 15, text="SCORE: " + str(score), fill="black")
+tk.update() # Tkinter가 변경된 GUI 요소들을 즉시 처리하고 화면에 그 결과를 반영
 
 paddle = Paddle(canvas, 'blue')
 top = TopPaddle(canvas, 'red')
