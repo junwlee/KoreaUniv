@@ -3,11 +3,24 @@
 from tkinter import *
 import random, os, sys
 
+class Scoreboard:
+    global canvas
+    def __init__(self, master):
+        self.master = master
+        self.canvas = canvas
+        self.score = 0
+        self.score_view = self.canvas.create_text(700, 15, text="SCORE: " + str(self.score), fill="black")
+
+    def increase_score(self):
+        self.score += 1
+        self.canvas.itemconfig(self.score_view, text="SCORE: " + str(self.score))
+
 class Ball:
-    def __init__(self, canvas, paddle, top, color):
+    def __init__(self, canvas, paddle, top, scoreboard, color):
         self.canvas = canvas
         self.paddle = paddle
         self.top = top
+        self.scoreboard = scoreboard
         self.id = canvas.create_oval(10, 10, 25, 25, fill=color) # 공 그리기
 
         initial_x = self.canvas.winfo_width() * 0.5
@@ -45,8 +58,6 @@ class Ball:
                 return True
         return False
 
-    def step(self): print("Hello")
-
     # 공을 움직이고 경계에 닿으면 방향을 변경
     def draw(self):
         self.canvas.move(self.id, self.x, self.y)
@@ -67,7 +78,7 @@ class Ball:
         if self.hit_paddle(pos): self.y = -3
 
         # TopPaddle에 부딪힌 경우
-        if self.hit_top(pos): self.step()
+        if self.hit_top(pos): self.scoreboard.increase_score()
 
 class Paddle:
     def __init__(self, canvas, color):
@@ -92,8 +103,8 @@ class Paddle:
         if pos[0] <= 0: self.x = 0
         elif pos[2] >= self.canvas_width: self.x = 0
 
-    def turn_left(self, event): self.x = -int(self.canvas_width * 0.003)
-    def turn_right(self, event): self.x = int(self.canvas_width * 0.003)
+    def turn_left(self, event): self.x = -int(self.canvas_width * 0.005)
+    def turn_right(self, event): self.x = int(self.canvas_width * 0.005)
 
 class TopPaddle:
     def __init__(self, canvas, color):
@@ -148,13 +159,12 @@ btn.place(x=5, y=5)
 # btn.pack() # 화면에 표시하라는 지시 명령
 # 버튼이 기본적으로 캔버스 내에서 자동적으로 정렬
 
-score = 0
-score_view = canvas.create_text(700, 15, text="SCORE: " + str(score), fill="black")
+scoreboard = Scoreboard(tk)
 tk.update() # Tkinter가 변경된 GUI 요소들을 즉시 처리하고 화면에 그 결과를 반영
 
 paddle = Paddle(canvas, 'blue')
 top = TopPaddle(canvas, 'red')
-ball = Ball(canvas, paddle, top, 'green')
+ball = Ball(canvas, paddle, top, scoreboard, 'green')
 
 tk.after(10, game_loop)
 tk.mainloop() # 이벤트 루프 시작
