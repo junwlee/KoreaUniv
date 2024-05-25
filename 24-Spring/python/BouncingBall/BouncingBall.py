@@ -1,18 +1,21 @@
 # Original source: https://blog.naver.com/isaac7263/221582646013
 
 from tkinter import *
-import random, os, sys
+import random
 
 class Scoreboard:
-    global canvas
     def __init__(self, master):
-        self.master = master # tk객체
+        self.master = master
         self.canvas = canvas
         self.score = 0
         self.score_view = self.canvas.create_text(700, 15, text="SCORE: " + str(self.score), fill="black")
 
     def increase_score(self):
         self.score += 1
+        self.canvas.itemconfig(self.score_view, text="SCORE: " + str(self.score))
+
+    def reset_score(self):
+        self.score = 0
         self.canvas.itemconfig(self.score_view, text="SCORE: " + str(self.score))
 
 class Ball:
@@ -22,9 +25,12 @@ class Ball:
         self.top = top
         self.scoreboard = scoreboard
         self.id = canvas.create_oval(10, 10, 25, 25, fill=color) # 공 그리기
+        self.reset_ball()
 
+    def reset_ball(self):
         initial_x = self.canvas.winfo_width() * 0.5
         initial_y = self.canvas.winfo_height() * 0.6
+        self.canvas.coords(self.id, 10, 10, 25, 25) # 공의 초기 크기
         self.canvas.move(self.id, initial_x, initial_y) # 공의 위치를 설정하는 정적인 값
 
         # 공의 시작 방향 변경
@@ -71,8 +77,7 @@ class Ball:
             self.y = -3
             self.touch_floor = True # 공이 바닥에 닿는 경우 패배
         # 공이 측면에 부딪히는 경우를 고려
-        if pos[0] <= 0: self.x = 3
-        if pos[2] >= self.canvas_width: self.x = -3
+        if pos[0] <= 0 or pos[2] >= self.canvas_width: self.x = 3 if pos[0] <= 0 else -3
 
         # Paddle에 부딪힌 경우
         if self.hit_bottom(pos): self.y = -3
@@ -82,7 +87,7 @@ class Ball:
             self.y = 3
             self.scoreboard.increase_score()
 
-class Paddle:
+class BottomPaddle:
     def __init__(self, canvas, color):
         self.canvas = canvas
         self.id = canvas.create_rectangle(0, 0, 100, 10, fill=color)
@@ -98,6 +103,11 @@ class Paddle:
         self.canvas.bind_all('<KeyPress-Left>', self.turn_left)
         self.canvas.bind_all('<KeyPress-Right>', self.turn_right)
 
+    def reset_paddle(self):
+        initial_x = self.canvas.winfo_width() * 0.4
+        initial_y = self.canvas.winfo_height() * 0.8
+        self.canvas.coords(self.id, 0, 0, 100, 10)
+        self.canvas.move(self.id, initial_x, initial_y)
 
     def draw(self):
         self.canvas.move(self.id, self.x, 0)
@@ -120,29 +130,36 @@ class TopPaddle:
 
         self.canvas_width = self.canvas.winfo_width()
 
+    def reset_top_paddle(self):
+        initial_x = self.canvas.winfo_width() * 0.4
+        initial_y = self.canvas.winfo_height() * 0.1
+        self.canvas.coords(self.id, 0, 0, 100, 20)
+        self.canvas.move(self.id, initial_x, initial_y)
+
     def draw(self):
         self.canvas.move(self.id, self.x, 0)
         pos = self.canvas.coords(self.id)
         if pos[0] <= 0: self.x = 1 # 숫자가 클수록 빠르게 움직임
         elif pos[2] >= self.canvas_width: self.x = -1
 
-def restart(event):
-    global path
-    global tk
-    try:
-        if ('normal' == tk.state()):
-            tk.destroy()
-    finally:
-        os.system(f'python "{path}"')
+# 함수가 전역 변수에 접근
+def restart_game():
+    # ball, paddle, top, scoreboard 변수들은 전역 네임스페이스에 정의
+    ball.reset_ball()
+    paddle.reset_paddle()
+    top.reset_top_paddle()
+    scoreboard.reset_score()
+    restart_button.place_forget()
+    game_loop()
 
 def game_loop():
     if not ball.touch_floor:
         ball.draw()
         paddle.draw()
         top.draw()
-    tk.after(10, game_loop) # 10ms = 초당 100번 함수 호출
-
-path = os.path.realpath(sys.argv[0])
+        tk.after(10, game_loop)
+    else:
+        restart_button.place(x=350, y=250)
 
 # Frame 생성
 tk = Tk() # Tk 객체: 버튼, 입력상자, 그림 그릴 수 있는 캔버스 제공
@@ -153,17 +170,17 @@ tk.wm_attributes("-topmost", 1) # 다른 모든 창들 앞에 캔버스를 가�
 canvas = Canvas(tk, width=800, height=500, bd=0, highlightthickness=0, bg="white")
 # bd=0, highlightthickness=0 => 캔버스 외곽에 둘러싼 외곽선(border)이 없도록
 canvas.pack() # 위 설정값대로 크기를 맞춤
-canvas.bind_all("<KeyPress-Return>", restart)
+canvas.bind_all("<KeyPress-Return>", restart_game)
 
-btn = Button(tk, text="Quit", command=tk.quit) # 'Quit' 버튼에 tk.quit 함수 연결
-btn.place(x=5, y=5)
-# btn.pack() # 화면에 표시하라는 지시 명령
-# 버튼이 기본적으로 캔버스 내에서 자동적으로 정렬
+quit_button = Button(tk, text="Quit", command=tk.quit)
+quit_button.place(x=5, y=5) # 절대 좌표를 사용하여 Tkinter 위젯을 정확한 위치에 배치
+
+restart_button = Button(tk, text="Restart", command=restart_game)
 
 scoreboard = Scoreboard(tk)
 tk.update() # Tkinter가 변경된 GUI 요소들을 즉시 처리하고 화면에 그 결과를 반영
 
-paddle = Paddle(canvas, 'blue')
+paddle = BottomPaddle(canvas, 'blue')
 top = TopPaddle(canvas, 'red')
 ball = Ball(canvas, paddle, top, scoreboard, 'green')
 
