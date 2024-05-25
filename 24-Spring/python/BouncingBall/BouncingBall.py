@@ -5,7 +5,8 @@ import random, os, sys
 
 class Scoreboard:
     global canvas
-    def __init__(self):
+    def __init__(self, master):
+        self.master = master # tk객체
         self.canvas = canvas
         self.score = 0
         self.score_view = self.canvas.create_text(700, 15, text="SCORE: " + str(self.score), fill="black")
@@ -101,8 +102,7 @@ class Paddle:
     def draw(self):
         self.canvas.move(self.id, self.x, 0)
         pos = self.canvas.coords(self.id)
-        if pos[0] <= 0: self.x = 0
-        elif pos[2] >= self.canvas_width: self.x = 0
+        if pos[0] <= 0 or pos[2] >= self.canvas_width: self.x = 0
 
     def turn_left(self, event): self.x = -int(self.canvas_width * 0.005)
     def turn_right(self, event): self.x = int(self.canvas_width * 0.005)
