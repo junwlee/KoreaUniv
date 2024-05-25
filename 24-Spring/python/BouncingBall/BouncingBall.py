@@ -38,9 +38,9 @@ class Ball:
         # 캔버스의 현재 높이와 너비를 저장하여, 공이 캔버스의 경계를 넘어서 이동하지 않도록 하는 데 사용하기 위함
 
         # 바닥에 닿는 경우 체크
-        self.hit_bottom = False
+        self.hit_floor = False
 
-    def hit_paddle(self, pos):
+    def hit_bottom(self, pos):
         paddle_pos = self.canvas.coords(self.paddle.id)
 
         # 공의 오른쪽 면의 위치가 패들의 왼쪽 위치보다 크고,
@@ -69,16 +69,18 @@ class Ball:
         if pos[1] <= 0: self.y = 3 # 공을 아래로 방향 전환시키기 위해 self.y의 값을 양수로 조정
         if pos[3] >= self.canvas_height:
             self.y = -3
-            self.hit_bottom = True # 공이 바닥에 닿는 경우 패배
+            self.hit_floor = True # 공이 바닥에 닿는 경우 패배
         # 공이 측면에 부딪히는 경우를 고려
         if pos[0] <= 0: self.x = 3
         if pos[2] >= self.canvas_width: self.x = -3
 
         # Paddle에 부딪힌 경우
-        if self.hit_paddle(pos): self.y = -3
+        if self.hit_bottom(pos): self.y = -3
 
         # TopPaddle에 부딪힌 경우
-        if self.hit_top(pos): self.scoreboard.increase_score()
+        if self.hit_top(pos):
+            self.y = 3
+            self.scoreboard.increase_score()
 
 class Paddle:
     def __init__(self, canvas, color):
@@ -135,7 +137,7 @@ def restart(event):
         os.system(f'python "{path}"')
 
 def game_loop():
-    if not ball.hit_bottom:
+    if not ball.hit_floor:
         ball.draw()
         paddle.draw()
         top.draw()
