@@ -5,8 +5,7 @@ import random, os, sys
 
 class Scoreboard:
     global canvas
-    def __init__(self, master):
-        self.master = master
+    def __init__(self):
         self.canvas = canvas
         self.score = 0
         self.score_view = self.canvas.create_text(700, 15, text="SCORE: " + str(self.score), fill="black")
