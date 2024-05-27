@@ -80,8 +80,10 @@ class Ball:
         if pos[0] <= 0 or pos[2] >= self.canvas_width: self.x = 3 if pos[0] <= 0 else -3
 
         # Paddle에 부딪힌 경우
-        if self.hit_bottom(pos): self.y = -3
-
+        if self.hit_bottom(pos):
+            angle = [i for i in range(-3, 0)]
+            random.shuffle(angle)
+            self.y = angle[random.randint(0, len(angle) - 1)]
         # TopPaddle에 부딪힌 경우
         if self.y < 0 and self.hit_top(pos):
             self.y = 3
@@ -112,7 +114,10 @@ class BottomPaddle:
     def draw(self):
         self.canvas.move(self.id, self.x, 0)
         pos = self.canvas.coords(self.id)
-        if pos[0] <= 0 or pos[2] >= self.canvas_width: self.x = 0
+        if pos[0] <= 0:
+            self.x = 1
+        if pos[2] >= self.canvas_width:
+                self.x = -1
 
     def turn_left(self, event): self.x = -int(self.canvas_width * 0.005)
     def turn_right(self, event): self.x = int(self.canvas_width * 0.005)
